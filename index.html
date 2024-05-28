@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Translation Service Documentation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        pre {
+            background-color: #f4f4f4;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <h1>Translation Service Documentation</h1>
+    <p>Welcome to the Translation Service! This service allows you to translate text between various languages using the NLLB-200-Distilled model.</p>
+
+    <h2>Example `curl` Command</h2>
+    <p>To translate text, you can use the following `curl` command:</p>
+    <pre>
+        curl -X 'POST' \
+          -H 'Content-Type: application/json' \
+          -d '{"text": "Hello, world!", "source_lang": "eng_Latn", "target_lang": "fra_Latn"}' \
+          https://translate-app-krlz4jg6.devinapps.com/translate
+    </pre>
+
+    <h2>Available Languages</h2>
+    <p>The following languages are supported by the NLLB-200-Distilled model:</p>
+    <ul id="language-list">
+        <!-- Languages will be populated here by JavaScript -->
+    </ul>
+
+    <h2>Translation Form</h2>
+    <form id="translation-form">
+        <label for="text">Text to translate:</label><br>
+        <textarea id="text" name="text" rows="4" cols="50"></textarea><br><br>
+
+        <label for="source-lang">Source Language:</label><br>
+        <select id="source-lang" name="source-lang">
+            <!-- Options will be populated here by JavaScript -->
+        </select><br><br>
+
+        <label for="target-lang">Target Language:</label><br>
+        <select id="target-lang" name="target-lang">
+            <!-- Options will be populated here by JavaScript -->
+        </select><br><br>
+
+        <button type="button" onclick="translateText()">Translate</button>
+    </form>
+
+    <h2>Translation Result</h2>
+    <p id="translation-result"></p>
+
+    <script>
+        const africanLanguages = [
+            'afr_Latn', 'amh_Ethi', 'bam_Latn', 'bem_Latn', 'ewe_Latn', 'fon_Latn', 'hau_Latn', 'ibo_Latn', 'kam_Latn',
+            'kin_Latn', 'kon_Latn', 'lin_Latn', 'lug_Latn', 'luo_Latn', 'nya_Latn', 'orm_Latn', 'sna_Latn', 'som_Latn',
+            'swh_Latn', 'tir_Ethi', 'tsn_Latn', 'tso_Latn', 'tum_Latn', 'wol_Latn', 'xho_Latn', 'yor_Latn', 'zul_Latn'
+        ];
+
+        async function fetchLanguages() {
+            const response = await fetch('/languages');
+            const languages = await response.json();
+            const languageList = document.getElementById('language-list');
+            const sourceLangSelect = document.getElementById('source-lang');
+            const targetLangSelect = document.getElementById('target-lang');
+
+            for (const [code, name] of Object.entries(languages)) {
+                const listItem = document.createElement('li');
+                listItem.textContent = code; // Display only the language code
+                if (africanLanguages.includes(code)) {
+                    listItem.classList.add('highlight');
+                }
+                languageList.appendChild(listItem);
+
+                const sourceOption = document.createElement('option');
+                sourceOption.value = code;
+                sourceOption.textContent = code; // Display only the language code
+                sourceLangSelect.appendChild(sourceOption);
+
+                const targetOption = document.createElement('option');
+                targetOption.value = code;
+                targetOption.textContent = code; // Display only the language code
+                targetLangSelect.appendChild(targetOption);
+            }
+        }
+
+        async function translateText() {
+            const text = document.getElementById('text').value;
+            const sourceLang = document.getElementById('source-lang').value;
+            const targetLang = document.getElementById('target-lang').value;
+            const translationResult = document.getElementById('translation-result');
+
+            // Show loading state
+            translationResult.innerText = 'Translating...';
+
+            const response = await fetch('/translate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: text,
+                    source_lang: sourceLang,
+                    target_lang: targetLang
+                })
+            });
+
+            const result = await response.json();
+            translationResult.innerText = result.translated_text;
+        }
+
+        // Fetch and populate languages on page load
+        fetchLanguages();
+    </script>
+</body>
+</html>
